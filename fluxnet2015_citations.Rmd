@@ -1,0 +1,55 @@
+---
+title: "FLUXNET2015 sites table"
+author: "Beni Stocker"
+date: "`r Sys.Date()`"
+# output:
+#   html_document:
+#     toc: true
+#     toc_float: true
+#     toc_depth: 4
+#     number_sections: true
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+header-includes:
+   - \usepackage{amsmath}
+bibliography: bibliography.bib
+---
+
+```{r}
+library(tidyverse)
+library(ingestr) # loads object siteinfo_fluxnet2015, should be placed here
+library(xtable)
+```
+
+
+```{r}
+siteinfo_table <- siteinfo_fluxnet2015 %>%
+  mutate( Reference = paste0("cite{", sitename ,"}") ) %>%
+  mutate( Years = paste0(as.character(year_start), "-", as.character(year_end)) ) %>%
+  select( -year_start, -year_end ) %>%
+  rename( Site=sitename, Lon.=lon, Lat.=lat, Elevation=elv, Veg.=classid, Clim.=koeppen_code ) %>%
+  select( Site, Lon., Lat., Years, Veg., Clim., Reference )
+
+siteinfo_table %>% 
+  knitr::kable( caption = "Sites used for calibration. Lon. is longitude, negative values indicate west longitude; Lat. is latitude, positive values indicate north latitude; Veg. is vegetation type: deciduous broadleaf forest (DBF); evergreen broadleaf forest (EBF); evergreen needleleaf forest (ENF); grassland (GRA); mixed deciduous and evergreen needleleaf forest (MF); savanna ecosystem (SAV); shrub ecosystem (SHR); wetland (WET)." )
+```
+
+```{r}
+latextable <- xtable( 
+  siteinfo_table, 
+  caption = "caption", 
+  align = rep("l", (ncol(siteinfo_table)+1)) 
+  )
+
+print( 
+  latextable, 
+  hline.after = c(-1, 0), 
+  file = "table_fluxnet2015_citations.tex", 
+  include.rownames=FALSE
+  )
+
+# create_table_latex(siteinfo_table, caption="caption", filn="table_fluxnet2015_citations.tex")
+```
